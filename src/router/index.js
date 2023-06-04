@@ -3,14 +3,14 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 // 导入页面组件
 import MainView from '../views/MainView.vue';
-import ChatView from '../views/ChatView.vue';
+import DictView from '../views/DictView.vue';
 
 // 创建路由实例
 const router = createRouter({
     history: createWebHistory(),
     routes: [
         { path: '/', component: MainView },
-        { path: '/chat', component: ChatView },
+        { path: '/dict', component: DictView },
     ]
 });
 

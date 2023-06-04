@@ -1,9 +1,11 @@
 <template>
-    <div>
+    <div id="root">
         <ruby v-for="item in data">
-            <a :href="'https://www.mojidict.com/SearchText/'+item.basic" target="_blank">{{ item.surface }}</a>
+            <a :href="'https://www.mojidict.com/SearchText/' + item.basic" target="_blank"
+                @click.prevent="postMessage(item.basic)"
+                :class="item.pos === '助詞' ? 'particle' : '' + item.pos === '名詞' ? 'noun' : ''">{{ item.surface }}</a>
             <rt>
-                {{ item.reading }}
+                {{ item.reading === '' ? 'ㅤ' : item.reading}}
             </rt>
         </ruby>
     </div>
@@ -21,15 +23,20 @@ onMounted(async () => {
 });
 
 
-async function updateData (newData){
-    data.value=newData
+async function updateData(newData) {
+    data.value = newData
     // 遍历数组，将每个元素的reading属性转换为平假名
     data.value.forEach(element => {
         element.reading = Kuroshiro.Util.kanaToHiragna(element.reading)
-        if (element.reading == element.surface){
+        if (element.reading == element.surface) {
             element.reading = ''
         }
     });
+}
+
+function postMessage(message) {
+    window.chrome.webview.postMessage(message)
+    console.log('postMessage', message)
 }
 
 onUnmounted(() => {
@@ -41,12 +48,63 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+#root {
+    flex: 1;
+    text-align: left;
+    /* display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: center; */
+    padding-left: 0px;
+    padding-top: 0px;
+}
+
 ruby {
-    font-size: 15vh;
+    font-size: 2em;
+    /* margin: 2px; */
+    display: inline-flex;
+    flex-direction: column-reverse;
+    /* line-height: 1; */
+    text-align: center;
+    justify-content: center;
 }
 
 ruby a {
     text-decoration: none;
+    font-weight: 600;
+    line-height: 1;
+}
+
+rb, rt {
+  display: inline;
+  line-height: 1.5;
+  
+  font-weight: 600;
+  font-size: 00.7em;
+}
+
+.particle {
+    color: #ff9900;
+}
+
+a:hover {
+    color: #535bf2;
+}
+
+.noun {
+    /* border-bottom: solid rgba(255, 255, 255, 0.5); */
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+    .particle {
+        color: #ff9900;
+    }
+
+    .noun {
+        /* border-bottom: solid rgba(0, 195, 255, 1); */
+        background-color: rgba(0, 195, 255, 0.3);
+    }
 }
 
 </style>
