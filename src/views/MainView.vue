@@ -1,13 +1,14 @@
 <template>
     <div id="root">
         <ruby v-for="item in data">
-            <a :href="'https://www.mojidict.com/SearchText/' + item.basic" target="_blank"
-                @click.prevent="postMessage(item.basic)"
+            <a :href="'https://www.mojidict.com/SearchText/' + (item.basic == '*' ? item.surface : item.basic)"
+                target="_blank" @click.prevent="postMessage(item.basic == '*' ? item.surface : item.basic)"
                 :class="item.pos === '助詞' ? 'particle' : '' + item.pos === '名詞' ? 'noun' : ''">{{ item.surface }}</a>
             <rt>
-                {{ item.reading === '' ? 'ㅤ' : item.reading}}
+                {{ item.reading === '' ? 'ㅤ' : item.reading }}
             </rt>
         </ruby>
+        <div id="div-translate">{{ translateText }}</div>
     </div>
 </template>
 
@@ -59,6 +60,15 @@ onUnmounted(() => {
     padding-top: 0px;
 }
 
+#div-translate {
+    font-size: 1.5em;
+    text-align: left;
+    word-break: break-all;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    line-height: 2;
+}
+
 ruby {
     font-size: 2em;
     /* margin: 2px; */
@@ -75,12 +85,13 @@ ruby a {
     line-height: 1;
 }
 
-rb, rt {
-  display: inline;
-  line-height: 1.5;
-  
-  font-weight: 600;
-  font-size: 00.7em;
+rb,
+rt {
+    display: inline;
+    line-height: 1.5;
+
+    font-weight: 600;
+    font-size: 00.7em;
 }
 
 .particle {
@@ -106,5 +117,4 @@ a:hover {
         background-color: rgba(0, 195, 255, 0.3);
     }
 }
-
 </style>

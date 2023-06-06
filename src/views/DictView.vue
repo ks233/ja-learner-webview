@@ -3,7 +3,8 @@
         <div v-for="item in searchResult">
             <h2>{{ item.title }}</h2>
             <h3>{{ item.excerpt }}</h3>
-            <hr/>
+            <a :href="'https://www.mojidict.com/details/' + item.targetId" target="_blank">MOJi辞書</a>
+            <hr />
         </div>
     </div>
 </template>
@@ -39,7 +40,7 @@ function search(text) {
             // 处理响应
             if (response.status === 200) {
                 let result = response.data.result.results['search-all'].result.word.searchResult
-                searchResult.value = result 
+                searchResult.value = result
                 // 请求成功，格式化输出JSON
                 const formatted_json = JSON.stringify(response.data, null, 2);
                 console.log(response.data);
@@ -100,10 +101,8 @@ function updateWord() {
 </script>
 
 <style scoped>
-
-#root{
+#root {
     padding: 20px;
     text-align: left;
 }
-
 </style>
