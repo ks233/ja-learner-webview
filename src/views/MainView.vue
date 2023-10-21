@@ -4,7 +4,7 @@
             <a :href="'https://www.mojidict.com/SearchText/' + (item.basic == '*' ? item.surface : item.basic)"
                 target="_blank" @click.prevent="postMessage(item.basic == '*' ? item.surface : item.basic)"
                 :class="item.pos === '助詞' ? 'particle' : '' + item.pos === '名詞' ? 'noun' : ''">{{ item.surface }}</a>
-            <rt>
+            <rt @click="setKatakanaBlacklist(item.surface)" :class="{'in-blacklist': katakana_blacklist.has(item.surface)}">
                 {{ item.reading === '' ? 'ㅤ' : item.reading }}
             </rt>
         </ruby>
@@ -22,6 +22,7 @@ const translationText = ref("")
 const translateKatakana = ref(false)
 
 let katakana_cache = {}
+let katakana_blacklist = ref(new Set())
 
 onMounted(async () => {
     console.log('mounted');
@@ -39,10 +40,20 @@ function setTranslateKatakana(value) {
     }
 }
 
+function setKatakanaBlacklist(param) {
+    if (katakana_blacklist.value.has(param)) {
+        katakana_blacklist.value.delete(param)
+    } else {
+        katakana_blacklist.value.add(param)
+    }
+}
+
 function katakanaToEnglish() {
     data.value.forEach(element => {
-        if (Kuroshiro.Util.hasKatakana(element.surface)) {
-            if (katakana_cache[element.surface] !== undefined) {
+        if (Kuroshiro.Util.hasKatakana(element.surface) && !Kuroshiro.Util.hasHiragana(element.surface) && element.surface !== "ー") {
+            if (katakana_blacklist.value.has(element.surface)) {
+                console.log("blacklist")
+            } else if (katakana_cache[element.surface] !== undefined) {
                 element.reading = katakana_cache[element.surface]
                 console.log("cache")
             } else {
@@ -157,6 +168,10 @@ a:hover {
 .noun {
     /* border-bottom: solid rgba(255, 255, 255, 0.5); */
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+.in-blacklist {
+    color: #AAAAAA;
 }
 
 @media (prefers-color-scheme: light) {
