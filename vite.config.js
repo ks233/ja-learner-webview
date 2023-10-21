@@ -12,6 +12,12 @@ export default defineConfig({
                 changeOrigin: true,
                 secure: false,
                 rewrite: (path) => path.replace(/^\/mojiapi/, ''),
+            },
+            '/googletrans': {
+                target: 'https://clients5.google.com/translate_a/',
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/googletrans/, ''),
             }, 
         },
     },

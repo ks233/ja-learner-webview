@@ -8,7 +8,7 @@
                 {{ item.reading === '' ? 'ㅤ' : item.reading }}
             </rt>
         </ruby>
-        <div id="div-translate">{{ translateText }}</div>
+        <div id="div-translate">{{ translationText }}</div>
     </div>
 </template>
 
@@ -16,15 +16,48 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import Kuroshiro from "kuroshiro";
+import googleTranslation from "../googleTrans";
 const data = ref([])
+const translationText = ref("")
+const translateKatakana = ref(false)
+
+let katakana_cache = {}
 
 onMounted(async () => {
     console.log('mounted');
     window.updateData = updateData
+    window.clearTranslationText = clearTranslationText
+    window.appendTranslationText = appendTranslationText
+    window.runGoogleTrans = runGoogleTrans
+    window.setTranslateKatakana = setTranslateKatakana
 });
 
+function setTranslateKatakana(value) {
+    translateKatakana.value = value
+    if (value === true) {
+        katakanaToEnglish()
+    }
+}
 
+function katakanaToEnglish() {
+    data.value.forEach(element => {
+        if (Kuroshiro.Util.hasKatakana(element.surface)) {
+            if (katakana_cache[element.surface] !== undefined) {
+                element.reading = katakana_cache[element.surface]
+                console.log("cache")
+            } else {
+                googleTranslation(element.surface, res => {
+                    element.reading = res
+                    katakana_cache[element.surface] = res
+                    console.log(katakana_cache)
+                })
+            }
+            console.log(katakana_cache)
+        }
+    })
+}
 async function updateData(newData) {
+    clearTranslationText()
     data.value = newData
     // 遍历数组，将每个元素的reading属性转换为平假名
     data.value.forEach(element => {
@@ -32,12 +65,30 @@ async function updateData(newData) {
         if (element.reading == element.surface) {
             element.reading = ''
         }
+        console.log(element)
     });
+    if (translateKatakana.value === true) {
+        katakanaToEnglish()
+    }
+}
+
+function clearTranslationText() {
+    translationText.value = ""
+}
+
+function appendTranslationText(text) {
+    translationText.value += text
 }
 
 function postMessage(message) {
     window.chrome.webview.postMessage(message)
     console.log('postMessage', message)
+}
+
+function runGoogleTrans(text) {
+    googleTranslation(text, res => {
+        translationText.value = res
+    }, "zh-CN")
 }
 
 onUnmounted(() => {
@@ -62,6 +113,7 @@ onUnmounted(() => {
 
 #div-translate {
     font-size: 1.5em;
+    font-weight: 600;
     text-align: left;
     word-break: break-all;
     word-wrap: break-word;
