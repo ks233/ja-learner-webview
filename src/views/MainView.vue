@@ -50,7 +50,7 @@ function setKatakanaBlacklist(param) {
 
 function katakanaToEnglish() {
     data.value.forEach(element => {
-        if (Kuroshiro.Util.hasKatakana(element.surface) && !Kuroshiro.Util.hasHiragana(element.surface) && element.surface !== "ー") {
+        if (Kuroshiro.Util.hasKatakana(element.surface) && !Kuroshiro.Util.hasHiragana(element.surface) && !Kuroshiro.Util.hasKanji(element.surface) && element.surface !== "ー") {
             if (katakana_blacklist.value.has(element.surface)) {
                 console.log("blacklist")
             } else if (katakana_cache[element.surface] !== undefined) {
