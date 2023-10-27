@@ -16,7 +16,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import Kuroshiro from "kuroshiro";
-import googleTranslation from "../googleTrans";
+import {googleTranslation, googleTransTk} from "../googleTrans";
 const data = ref([])
 const translationText = ref("")
 const translateKatakana = ref(false)
@@ -30,6 +30,7 @@ onMounted(async () => {
     window.clearTranslationText = clearTranslationText
     window.appendTranslationText = appendTranslationText
     window.runGoogleTrans = runGoogleTrans
+    window.runGoogleTransTk = runGoogleTransTk
     window.setTranslateKatakana = setTranslateKatakana
 });
 
@@ -98,6 +99,13 @@ function postMessage(message) {
 
 function runGoogleTrans(text) {
     googleTranslation(text, res => {
+        translationText.value = res
+    }, "zh-CN")
+}
+
+function runGoogleTransTk(text) {
+    console.log(text)
+    googleTransTk(text, res => {
         translationText.value = res
     }, "zh-CN")
 }
