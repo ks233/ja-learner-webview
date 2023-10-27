@@ -4,8 +4,8 @@
             <a :href="'https://www.mojidict.com/SearchText/' + (item.basic == '*' ? item.surface : item.basic)"
                 target="_blank" @click.prevent="postMessage(item.basic == '*' ? item.surface : item.basic)"
                 :class="item.pos === '助詞' ? 'particle' : '' + item.pos === '名詞' ? 'noun' : ''">{{ item.surface }}</a>
-            <rt @click="setKatakanaBlacklist(item.surface)" :class="{'in-blacklist': katakana_blacklist.has(item.surface)}">
-                {{ item.reading === '' ? 'ㅤ' : item.reading }}
+            <rt @click="setKatakanaBlacklist(item)" :class="{ 'in-blacklist': katakana_blacklist.has(item.surface) }">
+                {{ itemRuby(item) }}
             </rt>
         </ruby>
         <div id="div-translate">{{ translationText }}</div>
@@ -16,7 +16,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import Kuroshiro from "kuroshiro";
-import {googleTranslation, googleTransTk} from "../googleTrans";
+import { googleTranslation, googleTransTk } from "../googleTrans";
 const data = ref([])
 const translationText = ref("")
 const translateKatakana = ref(false)
@@ -41,31 +41,49 @@ function setTranslateKatakana(value) {
     }
 }
 
-function setKatakanaBlacklist(param) {
-    if (katakana_blacklist.value.has(param)) {
-        katakana_blacklist.value.delete(param)
-    } else {
-        katakana_blacklist.value.add(param)
+function setKatakanaBlacklist(item) {
+    if (!onlyHasKatakana(item.surface)) {
+        return
     }
+    if (katakana_blacklist.value.has(item.surface)) {
+        katakana_blacklist.value.delete(item.surface)
+        if (translateKatakana.value === true) {
+            itemKatakanaToEnglish(item)
+        }
+    } else {
+        katakana_blacklist.value.add(item.surface)
+    }
+}
+
+function itemRuby(item) {
+    if (item.english !== '' && translateKatakana.value === true && !katakana_blacklist.value.has(item.surface)) return item.english
+    return item.reading === '' ? 'ㅤ' : item.reading
+}
+
+function itemKatakanaToEnglish(item) {
+    var surface = item.surface
+    if (onlyHasKatakana(surface) && item.english === '') {
+        if (katakana_blacklist.value.has(surface)) {
+            console.log("blacklist")
+        } else if (katakana_cache[surface] !== undefined) {
+            item.english = katakana_cache[surface]
+        } else {
+            googleTranslation(surface, res => {
+                item.english = res
+                katakana_cache[surface] = res
+                return res
+            })
+        }
+    }
+}
+
+function onlyHasKatakana(text) {
+    return Kuroshiro.Util.hasKatakana(text) && !Kuroshiro.Util.hasHiragana(text) && !Kuroshiro.Util.hasKanji(text) && text !== "ー"
 }
 
 function katakanaToEnglish() {
     data.value.forEach(element => {
-        if (Kuroshiro.Util.hasKatakana(element.surface) && !Kuroshiro.Util.hasHiragana(element.surface) && !Kuroshiro.Util.hasKanji(element.surface) && element.surface !== "ー") {
-            if (katakana_blacklist.value.has(element.surface)) {
-                console.log("blacklist")
-            } else if (katakana_cache[element.surface] !== undefined) {
-                element.reading = katakana_cache[element.surface]
-                console.log("cache")
-            } else {
-                googleTranslation(element.surface, res => {
-                    element.reading = res
-                    katakana_cache[element.surface] = res
-                    console.log(katakana_cache)
-                })
-            }
-            console.log(katakana_cache)
-        }
+        itemKatakanaToEnglish(element)
     })
 }
 async function updateData(newData) {
@@ -77,7 +95,7 @@ async function updateData(newData) {
         if (element.reading == element.surface) {
             element.reading = ''
         }
-        console.log(element)
+        element.english = ''
     });
     if (translateKatakana.value === true) {
         katakanaToEnglish()
@@ -104,7 +122,7 @@ function runGoogleTrans(text) {
 }
 
 function runGoogleTransTk(text) {
-    console.log(text)
+    // console.log(text)
     googleTransTk(text, res => {
         translationText.value = res
     }, "zh-CN")
