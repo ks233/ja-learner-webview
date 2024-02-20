@@ -1,10 +1,14 @@
 <template>
-    <div id="root">
+    <div id="root" @dblclick="postMessage('DBLCLICK')" @mousedown.ctrl="postMessage('MOUSEDOWN')">
         <ruby v-for="item in data">
             <a :href="'https://www.mojidict.com/SearchText/' + (item.basic == '*' ? item.surface : item.basic)"
-                target="_blank" @click.prevent="postMessage(item.basic == '*' ? item.surface : item.basic)"
-                :class="item.pos === '助詞' ? 'particle' : '' + item.pos === '名詞' ? 'noun' : ''">{{ item.surface }}</a>
-            <rt @click="setKatakanaBlacklist(item)" :class="{ 'in-blacklist': katakana_blacklist.has(item.surface) }">
+                target="_blank"
+                @click.exact.prevent="postMessage(item.basic == '*' || item.basic == '' ? item.surface : item.basic)"
+                @click.shift.prevent="postMessage('APPEND' + item.surface)"
+                :class="item.pos === '助詞' ? 'particle' : '' + item.pos === '名詞' ? 'noun' : ''" class="unselectable">{{
+                    item.surface }}</a>
+            <rt @click="setKatakanaBlacklist(item)" :class="{ 'in-blacklist': katakana_blacklist.has(item.surface) }"
+                class="unselectable">
                 {{ itemRuby(item) }}
             </rt>
         </ruby>
@@ -68,7 +72,7 @@ function itemKatakanaToEnglish(item) {
         } else if (katakana_cache[surface] !== undefined) {
             item.english = katakana_cache[surface]
         } else {
-            googleTranslation(surface, res => {
+            googleTransTk(surface, res => {
                 item.english = res
                 katakana_cache[surface] = res
                 return res
@@ -144,8 +148,7 @@ onUnmounted(() => {
     justify-content: center;
     text-align: center;
     align-items: center; */
-    padding-left: 0px;
-    padding-top: 0px;
+    padding: 5px;
 }
 
 #div-translate {
@@ -160,6 +163,7 @@ onUnmounted(() => {
 
 ruby {
     font-size: 2em;
+    padding: 0;
     /* margin: 2px; */
     display: inline-flex;
     flex-direction: column-reverse;
@@ -179,6 +183,7 @@ rt {
     display: inline;
     line-height: 1.5;
 
+    text-align: center;
     font-weight: 600;
     font-size: 00.7em;
 }
@@ -198,6 +203,15 @@ a:hover {
 
 .in-blacklist {
     color: #AAAAAA;
+}
+
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 @media (prefers-color-scheme: light) {

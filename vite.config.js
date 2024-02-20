@@ -18,7 +18,7 @@ export default defineConfig({
                 changeOrigin: true,
                 secure: false,
                 rewrite: (path) => path.replace(/^\/googletrans_api/, ''),
-                ws: true,
+                // ws: true,
             },
             '/googletrans': {
                 target: 'https://clients5.google.com/translate_a/',

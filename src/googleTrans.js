@@ -5,7 +5,7 @@ function googleTranslation(text, callback, tl = "en") {
     // tl: 目标语言
     // q: 待翻译文本
     // sl: 源语言
-    console.log("googleTranslation")
+    // console.log("googleTranslation")
     axios.get('googletrans/t', {
         params: {
             tl: tl,
@@ -21,7 +21,7 @@ function googleTranslation(text, callback, tl = "en") {
 }
 
 function googleTransTk(text, callback, tl = "en") {
-    console.log("googleTransTk")
+    // console.log("googleTransTk")
     tl = tl.toLowerCase();
     var headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -40,7 +40,7 @@ function googleTransTk(text, callback, tl = "en") {
             tk: calcHash(text),
         }, headers: headers,
     }).then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         var result = res.data[0][0]
         result = transformTkResult(result);
 
