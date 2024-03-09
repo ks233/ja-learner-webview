@@ -21,10 +21,16 @@ export default defineConfig({
                 // ws: true,
             },
             '/googletrans': {
-                target: 'https://clients5.google.com/translate_a/',
+                target: 'https://translate.googleapis.com/translate_a/',
                 changeOrigin: true,
                 secure: false,
                 rewrite: (path) => path.replace(/^\/googletrans/, ''),
+            }, 
+            '/ankiconnect': {
+                target: 'http://127.0.0.1:8765',
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/ankiconnect/, ''),
             }, 
         },
     },
