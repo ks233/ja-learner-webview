@@ -12,12 +12,14 @@
                 <a :href="'https://www.weblio.jp/content/' + searchText" target="_blank">Weblio</a>
                 <span> / </span>
                 <a :href="'https://dic.nicovideo.jp/a/' + searchText" target="_blank">ニコニコ</a>
-                <span> / </span>
-                <a @click="ankiAddNote(searchText, currentText, '')" href="#"
-                    style="color:orangered">添加到Anki</a>
+
+                <template v-if="ankiEnabled">
+                    <span> / </span>
+                    <a @click="ankiAddNote(searchText, currentText, '')" href="#" style="color:orangered">添加到Anki</a>
+                </template>
             </div>
 
-            <div v-if="ankiStatus != ''">{{ ankiStatus }}</div>
+            <div v-if="ankiEnabled && ankiStatus != ''">{{ ankiStatus }}</div>
             <div v-for="item in searchResult">
                 <hr>
                 <h2 style="font-size: 1.7em; margin-bottom: 10px; margin-top: 2px;">{{ item.title }}</h2>
@@ -47,19 +49,24 @@
                     <a :href="'https://www.weblio.jp/content/' + item.title.split(' |')[0]" target="_blank">Weblio</a>
                     <span> / </span>
                     <a :href="'https://dic.nicovideo.jp/a/' + item.title.split(' |')[0]" target="_blank">ニコニコ</a>
-                    <span> / </span>
-                    <a @click="ankiAddNote(item.title, currentText, itemExplain(item))" href="#"
-                        style="color:orangered">添加到Anki</a>
+                    <template v-if="ankiEnabled">
+                        <span> / </span>
+                        <a @click="ankiAddNote(item.title, currentText, itemExplain(item))" href="#"
+                            style="color:orangered">添加到Anki</a>
+                    </template>
 
                 </div>
             </div>
         </div>
-        <hr style="width: 100%;">
-        <div id="bottom">
-            添加Anki卡片时的例句：
-            <textarea type="text" id="current-text" v-model="currentText"></textarea>
+        <template v-if="ankiEnabled">
+            <hr style="width: 100%;">
+            <div id="bottom">
+                添加Anki卡片时的例句：
+                <textarea type="text" id="current-text" v-model="currentText"></textarea>
 
-        </div>
+            </div>
+        </template>
+
     </div>
 </template>
 
@@ -73,9 +80,21 @@ const app_id = 'E62VyFVLMiW7kvbtVq3p';
 const searchResult = ref([])
 const searchText = ref('')
 const currentText = ref('')
+
+const ankiEnabled = ref(false)
+window.setAnkiEnabled = function (enabled) {
+    ankiEnabled.value = enabled
+}
+
 const ankiStatus = ref('')
 
-let cahce_search = {}
+onMounted(() => {
+    window.chrome.webview.postMessage("ANKI_INIT")
+})
+
+const cahce_search = {}
+
+let appendMode = false
 
 async function search(text) {
     if (text.trim() == "") {
@@ -83,9 +102,14 @@ async function search(text) {
         return
     }
     if (text.startsWith("APPEND")) {
-        searchText.value += text.slice(6)
-
+        if(appendMode){
+            searchText.value += text.slice(6)
+        }else{
+            searchText.value = text.slice(6)
+        }
+        appendMode = true
     } else {
+        appendMode = false
         searchText.value = text
     }
     let response = null
@@ -128,29 +152,32 @@ function setCurrentText(text) {
 window.searchText = search
 window.setCurrentText = setCurrentText
 
+
+
 function itemExplain(item) {
     if (item.detail) {
         let explain = ""
-        let count = 1
         const keys = Object.keys(item.detail)
         if (keys.length == 1) {
-            return `<b>${item.detail[keys[0]].main}</b>（${item.detail[keys[0]].sub}）`
+            return `<li><b>${item.detail[keys[0]].main}</b>（${item.detail[keys[0]].sub}）</li>`
         }
+        explain = "<ol>"
         keys.forEach((key) => {
-            explain += `<b>${count}. ${item.detail[key].main}</b>`
+            explain += `<li><b>${item.detail[key].main}</b>`
             if (item.detail[key].sub != '') {
                 explain += `（${item.detail[key].sub}）`
             }
-            explain += '<br>'
+            explain += '</li>'
             count++
         })
+        explain += "</ol>"
         return explain
     } else {
         return item.excerpt
     }
 }
 
-let cache_detail = {}
+const cache_detail = {}
 
 async function fetchMojiDetail(obj_id) {
     let response = {}
@@ -222,24 +249,48 @@ async function invokeAnki(action, version, params = {}) {
     }
 }
 
+const ankiConfig = {
+    DeckName: "",
+    ModelName: "",
+    FieldNames: {
+        Word: "",
+        Example: "",
+        Explain: ""
+    }
+}
+
+function checkAnkiConfig() {
+    if (ankiConfig.DeckName == "") return false
+    if (ankiConfig.ModelName == "") return false
+    if (ankiConfig.FieldNames.Word == "") return false
+    if (ankiConfig.FieldNames.Example == "") return false
+    if (ankiConfig.FieldNames.Explain == "") return false
+    return true
+}
+window.setAnkiConfig = function (deck, model, word, example, explain) {
+    ankiConfig.DeckName = deck
+    ankiConfig.ModelName = model
+    ankiConfig.FieldNames.Word = word
+    ankiConfig.FieldNames.Example = example
+    ankiConfig.FieldNames.Explain = explain
+}
 
 async function ankiAddNote(word, example, explain) {
-
     const params = {
         "note": {
-            "deckName": "日语单词",
-            "modelName": "ja-learner",
+            "deckName": ankiConfig.DeckName,
+            "modelName": ankiConfig.ModelName,
 
             "fields": {
-                "单词": word,
-                "例句": example,
-                "解释": explain
+                [ankiConfig.FieldNames.Word]: word,
+                [ankiConfig.FieldNames.Example]: example,
+                [ankiConfig.FieldNames.Explain]: explain
             },
             "options": {
                 "allowDuplicate": false,
                 "duplicateScope": "deck",
                 "duplicateScopeOptions": {
-                    "deckName": "日语单词",
+                    "deckName": ankiConfig.Deck,
                     "checkChildren": false,
                     "checkAllModels": false
                 }
@@ -250,6 +301,7 @@ async function ankiAddNote(word, example, explain) {
     try {
         const result = await invokeAnki('addNote', 6, params);
         ankiStatus.value = "正在添加单词卡片。。。"
+        console.log(params)
         ankiMessage('添加成功：' + result);
     } catch (error) {
         ankiMessage('添加失败：' + error);

@@ -25,8 +25,8 @@ const data = ref([])
 const translationText = ref("")
 const translateKatakana = ref(false)
 
-let katakana_cache = {}
-let katakana_blacklist = ref(new Set())
+const katakana_cache = {}
+const katakana_blacklist = ref(new Set())
 
 onMounted(async () => {
     console.log('mounted');
@@ -116,7 +116,7 @@ function appendTranslationText(text) {
 
 function postMessage(message) {
     window.chrome.webview.postMessage(message)
-    console.log('postMessage', message)
+    // console.log('postMessage', message)
 }
 
 function runGoogleTrans(text) {
