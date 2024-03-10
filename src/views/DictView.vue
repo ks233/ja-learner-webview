@@ -168,7 +168,6 @@ function itemExplain(item) {
                 explain += `（${item.detail[key].sub}）`
             }
             explain += '</li>'
-            count++
         })
         explain += "</ol>"
         return explain
