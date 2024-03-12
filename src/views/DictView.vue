@@ -159,7 +159,11 @@ function itemExplain(item) {
         let explain = ""
         const keys = Object.keys(item.detail)
         if (keys.length == 1) {
-            return `<li><b>${item.detail[keys[0]].main}</b>（${item.detail[keys[0]].sub}）</li>`
+            if (item.detail[keys[0]].sub != ""){
+                return `<li><b>${item.detail[keys[0]].main}</b>（${item.detail[keys[0]].sub}）</li>`
+            }else{
+                return `<li><b>${item.detail[keys[0]].main}</b></li>`
+            }
         }
         explain = "<ol>"
         keys.forEach((key) => {
