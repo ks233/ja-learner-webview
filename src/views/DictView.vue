@@ -102,9 +102,9 @@ async function search(text) {
         return
     }
     if (text.startsWith("APPEND")) {
-        if(appendMode){
+        if (appendMode) {
             searchText.value += text.slice(6)
-        }else{
+        } else {
             searchText.value = text.slice(6)
         }
         appendMode = true
@@ -128,7 +128,7 @@ async function search(text) {
                     }
                 }
             ],
-            g_ver: "v4.7.5.20240308",
+            g_ver: "v4.8.7.20240716",
             _ApplicationId: app_id
         };
         response = await axios.post(url, payload)
@@ -136,7 +136,7 @@ async function search(text) {
     if (response.status === 200) {
         cahce_search[searchText.value] = response
         let result = response.data.result.results['search-all'].result.word.searchResult
-        searchResult.value = result.filter((x) => (x.isFree))
+        searchResult.value = result
         searchResult.value.forEach(async (x) => {
             x.detail = await fetchMojiDetail(x.targetId)
         })
@@ -159,9 +159,9 @@ function itemExplain(item) {
         let explain = ""
         const keys = Object.keys(item.detail)
         if (keys.length == 1) {
-            if (item.detail[keys[0]].sub != ""){
+            if (item.detail[keys[0]].sub != "") {
                 return `<li><b>${item.detail[keys[0]].main}</b>（${item.detail[keys[0]].sub}）</li>`
-            }else{
+            } else {
                 return `<li><b>${item.detail[keys[0]].main}</b></li>`
             }
         }
