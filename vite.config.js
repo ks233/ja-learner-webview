@@ -19,13 +19,18 @@ export default defineConfig({
                 secure: false,
                 rewrite: (path) => path.replace(/^\/googletrans_api/, ''),
                 // ws: true,
-            },
+            }, '/goog_v2': {
+                target: 'https://translate-pa.googleapis.com/v1/translateHtml',
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/goog_v2/, ''),
+            }, 
             '/googletrans': {
                 target: 'https://translate.googleapis.com/translate_a/',
                 changeOrigin: true,
                 secure: false,
                 rewrite: (path) => path.replace(/^\/googletrans/, ''),
-            }, 
+            },
             '/ankiconnect': {
                 target: 'http://127.0.0.1:8765',
                 changeOrigin: true,

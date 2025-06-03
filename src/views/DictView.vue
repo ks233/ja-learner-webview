@@ -128,7 +128,7 @@ async function search(text) {
                     }
                 }
             ],
-            g_ver: "v4.8.7.20240716",
+            g_ver: "v4.10.0.20250514",
             _ApplicationId: app_id
         };
         response = await axios.post(url, payload)

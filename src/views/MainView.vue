@@ -20,7 +20,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import Kuroshiro from "kuroshiro";
-import { googleTranslation, googleTransTk } from "../googleTrans";
+import { googleTranslation, googleTransTk, googleTransV2 } from "../googleTrans";
 const data = ref([])
 const translationText = ref("")
 const translateKatakana = ref(false)
@@ -34,7 +34,7 @@ onMounted(async () => {
     window.clearTranslationText = clearTranslationText
     window.appendTranslationText = appendTranslationText
     window.runGoogleTrans = runGoogleTrans
-    window.runGoogleTransTk = runGoogleTransTk
+    window.runGoogleTransV2 = runGoogleTransV2
     window.setTranslateKatakana = setTranslateKatakana
 });
 
@@ -72,7 +72,7 @@ function itemKatakanaToEnglish(item) {
         } else if (katakana_cache[surface] !== undefined) {
             item.english = katakana_cache[surface]
         } else {
-            googleTransTk(surface, res => {
+            googleTransV2(surface, res => {
                 item.english = res
                 katakana_cache[surface] = res
                 return res
@@ -125,9 +125,9 @@ function runGoogleTrans(text) {
     }, "zh-CN")
 }
 
-function runGoogleTransTk(text) {
+function runGoogleTransV2(text) {
     // console.log(text)
-    googleTransTk(text, res => {
+    googleTransV2(text, res => {
         translationText.value = res
     }, "zh-CN")
 }
